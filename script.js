@@ -7,9 +7,13 @@ const barcodeDetector = new BarcodeDetector({
   formats: ["qr_code"]
 });
 
-const highlightBarcode = (bitmap, timestamp, barcode) => {
-  console.log(barcode)
-  return new VideoFrame(bitmap, { timestamp });
+const highlightBarcode = (bitmap, timestamp, detectedBarcodes) => {     
+  console.log(detectedBarcodes.map(detectedBarcode => {
+    return detectedBarcode.rawValue  
+  }).join(', ') )
+  const newFrame = new VideoFrame(bitmap, { timestamp });
+  bitmap.close();
+  return newFrame;
 };
 
 button.addEventListener("click", async () => {
@@ -25,11 +29,15 @@ button.addEventListener("click", async () => {
     async transform(videoFrame, controller) {
       const bitmap = await createImageBitmap(videoFrame);
       const detectedBarcodes = await barcodeDetector.detect(bitmap);
+      if (!detectedBarcodes.length) {
+        bitmap.close();
+        controller.enqueue(videoFrame);
+        return;
+      }
       const timestamp = videoFrame.timestamp;
       const newFrame = highlightBarcode(bitmap, timestamp, detectedBarcodes);      
       videoFrame.close();
-      controller.enqueue(newFrame);
-     // newFrame.close();
+      controller.enqueue(newFrame);     
     }
   });
   
