@@ -7,9 +7,7 @@ const highlightBarcode = (frame, barcode) => {
 const button = document.querySelector("button");
 button.addEventListener("click", async () => {
   const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-  const videoTrack = stream.getVideoTracks()[0];
-  const trackProcessor = new TrackProcessor(videoTrack);
-  const trackGenerator = new TrackGenerator();
+  const videoTrack = stream.getVideoTracks()[0];  
   const transformer = new TransformStream({
     async transform(videoFrame, controller) {
       const barcode = barcodeDetector.detect(videoFrame);
@@ -18,7 +16,8 @@ button.addEventListener("click", async () => {
       controller.enqueue(newFrame);
     }
   });
-
+  const trackProcessor = new TrackProcessor(videoTrack);
+  const trackGenerator = new TrackGenerator();
   // After this, trackGenerator can be assigned to any sink such as a
   // peer connection, or media element.
   trackProcessor.readable
