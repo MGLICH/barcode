@@ -8,10 +8,12 @@ const barcodeDetector = new BarcodeDetector({
 });
 
 const highlightBarcode = (bitmap, timestamp, barcode) => {
+  console.log(barcode)
   return new VideoFrame(bitmap, { timestamp });
 };
 
 button.addEventListener("click", async () => {
+  try {
   const stream = await navigator.mediaDevices.getUserMedia({ video: true });
   const videoTrack = stream.getVideoTracks()[0];
   video.srcObject = stream;
@@ -27,11 +29,10 @@ button.addEventListener("click", async () => {
       const newFrame = highlightBarcode(bitmap, timestamp, detectedBarcodes);      
       videoFrame.close();
       controller.enqueue(newFrame);
-      newFrame.close();
+     // newFrame.close();
     }
   });
   
-  try {
   const trackProcessor = new MediaStreamTrackProcessor(videoTrack);
   const trackGenerator = new MediaStreamTrackGenerator("video");
   // After this, trackGenerator can be assigned to any sink such as a
@@ -41,8 +42,8 @@ button.addEventListener("click", async () => {
     .pipeTo(trackGenerator.writable);
 
   // Forward Web-exposed signals to the original videoTrack.
-  //trackGenerator.readableControl.pipeTo(trackProcessor.writableControl);
+  trackGenerator.readableControl.pipeTo(trackProcessor.writableControl);
   } catch (err) {
-    console.error(err.name, err)
+    console.error(err.name, err.message)
   }
 });
