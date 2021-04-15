@@ -24,7 +24,7 @@ button.addEventListener("click", async () => {
   const transformer = new TransformStream({
     async transform(videoFrame, controller) {
       const bitmap = await createImageBitmap(videoFrame);
-      const detectedBarcodes = barcodeDetector.detect(bitmap);
+      const detectedBarcodes = await barcodeDetector.detect(bitmap);
       const timestamp = videoFrame.timestamp;
       const newFrame = highlightBarcode(bitmap, timestamp, detectedBarcodes);      
       videoFrame.close();
