@@ -1,7 +1,13 @@
-const barcodeDetector = new BarcodeDetector();
+const barcodeDetector = new BarcodeDetector({
+  // (Optional) A series of barcode formats to search for.
+  // Not all formats may be supported on all platforms
+  formats: [    
+    'qr_code',    
+  ]
+});
 
-const highlightBarcode = (frame, barcode) => {
-  return frame;
+const highlightBarcode = (bitmap, timestamp, barcode) => {
+  return new VideoFrame(bitmap, {timestamp});
 };
 
 const button = document.querySelector("button");
@@ -9,11 +15,13 @@ button.addEventListener("click", async () => {
   const stream = await navigator.mediaDevices.getUserMedia({ video: true });
   const videoTrack = stream.getVideoTracks()[0];  
   const transformer = new TransformStream({
-    async transform(videoFrame, controller) {      
-      const barcode = barcodeDetector.detect();
-      const newFrame = highlightBarcode(await videoFrame.createImageBitmap(), barcode);
+    async transform(videoFrame, controller) {
+      const bitmap = await createImageBitmap(videoFrame);
+      const barcode = barcodeDetector.detect(bitmap);
+      const newFrame = highlightBarcode(bitmap, videoFrame.timestamp, barcode);
       videoFrame.close();
       controller.enqueue(newFrame);
+      newFrame.close()
     }
   });
   const trackProcessor = new MediaStreamTrackProcessor(videoTrack);
