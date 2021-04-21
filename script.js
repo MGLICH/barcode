@@ -3,6 +3,10 @@ const button = document.querySelector("button");
 const canvas = new OffscreenCanvas(300, 300);
 const ctx = canvas.getContext('2d');
 
+const canvas2 = document.createElement('canvas')
+const ctx2 = canvas2.getContext('2d');
+document.body.append(canvas2)
+
 const barcodeDetector = new BarcodeDetector({
   // (Optional) A series of barcode formats to search for.
   // Not all formats may be supported on all platforms
@@ -11,14 +15,20 @@ const barcodeDetector = new BarcodeDetector({
 
 const highlightBarcode = async (bitmap, timestamp, detectedBarcodes) => {
   ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  
+  
+  canvas2.width = canvas.width
+  canvas2.height = canvas.height
+  
   bitmap.close();  
   detectedBarcodes.map(detectedBarcode => {
     const {x, y, width, height} = detectedBarcode.boundingBox;
-    ctx.rect(Math.floor(x), Math.floor(y), Math.floor(width), Math.floor(height);        
     
+    ctx.strokeRect(Math.floor(x), Math.floor(y), Math.floor(width), Math.floor(height));        
+    ctx2.strokeRect(Math.floor(x), Math.floor(y), Math.floor(width), Math.floor(height));            
   })  
-  
-  const newFrame = new VideoFrame(await createImageBitmap(canvas), {timestamp}); 
+  const newBitmap = await createImageBitmap(canvas)
+  const newFrame = new VideoFrame(newBitmap, {timestamp}); 
   return newFrame;
 };
 
@@ -44,6 +54,7 @@ button.addEventListener("click", async () => {
       }
       const timestamp = videoFrame.timestamp;
       const newFrame = await highlightBarcode(bitmap, timestamp, detectedBarcodes);      
+      console.log(newFrame)
       videoFrame.close();
       controller.enqueue(newFrame);     
     }
