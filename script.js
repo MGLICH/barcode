@@ -1,4 +1,7 @@
-if (!isSecure)
+if (!isSecureContext) {
+  location.protocol = 'https:';  
+}
+
 const video = document.querySelector("video");
 const button = document.querySelector("button");
 const canvas = new OffscreenCanvas(1, 1);
@@ -30,8 +33,9 @@ const highlightBarcode = async (bitmap, timestamp, detectedBarcodes) => {
 
 button.addEventListener("click", async () => {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
     const videoTrack = stream.getVideoTracks()[0];
+    await videoTrack.applyConstraints({facingMode: { exact: "environment" }});
 
     video.addEventListener("loadedmetadata", () => {
       canvas.width = video.videoWidth;
