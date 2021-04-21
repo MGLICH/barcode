@@ -1,6 +1,6 @@
 const video = document.querySelector('video');
 const button = document.querySelector("button");
-const canvas = new OffscreenCanvas(0, 0);
+const canvas = new OffscreenCanvas(300, 300);
 const ctx = canvas.getContext('2d');
 
 const barcodeDetector = new BarcodeDetector({
@@ -13,8 +13,11 @@ const highlightBarcode = async (bitmap, timestamp, detectedBarcodes) => {
   ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();  
   detectedBarcodes.map(detectedBarcode => {
-    ctx.rect(detectedBarcode.x, detectedBarcode.y, detectedBarcode.width, detectedBarcode.height);
+    const {x, y, width, height} = detectedBarcode.boundingBox;
+    ctx.rect(Math.floor(x), Math.floor(y), Math.floor(width), Math.floor(height);        
+    
   })  
+  
   const newFrame = new VideoFrame(await createImageBitmap(canvas), {timestamp}); 
   return newFrame;
 };
@@ -24,9 +27,9 @@ button.addEventListener("click", async () => {
   const stream = await navigator.mediaDevices.getUserMedia({ video: true });
   const videoTrack = stream.getVideoTracks()[0];
   video.srcObject = stream;
-  video.addEventListener('loadedmetadata', () => {
-    canvas.width = video.width;
-    canvas.height = video.height;
+  video.addEventListener('loadedmetadata', () => {  
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
     video.play();
   });
   
