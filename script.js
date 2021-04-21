@@ -1,42 +1,29 @@
 const video = document.querySelector('video');
 const button = document.querySelector("button");
-const canvas = new OffscreenCanvas(300, 300);
+const canvas = new OffscreenCanvas(1, 1);
 const ctx = canvas.getContext('2d');
 
-const canvas2 = document.createElement('canvas')
-const ctx2 = canvas2.getContext('2d');
-document.body.append(canvas2)
-
 const barcodeDetector = new BarcodeDetector({
-  // (Optional) A series of barcode formats to search for.
-  // Not all formats may be supported on all platforms
   formats: ["qr_code"]
 });
 
 const highlightBarcode = async (bitmap, timestamp, detectedBarcodes) => {
-  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  
-  
-  canvas2.width = canvas.width
-  canvas2.height = canvas.height
-  
+  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);  
   bitmap.close();  
   detectedBarcodes.map(detectedBarcode => {
-    const {x, y, width, height} = detectedBarcode.boundingBox;
-    
-    ctx.strokeRect(Math.floor(x), Math.floor(y), Math.floor(width), Math.floor(height));        
-    ctx2.strokeRect(Math.floor(x), Math.floor(y), Math.floor(width), Math.floor(height));            
+    const {x, y, width, height} = detectedBarcode.boundingBox;  
+    ctx.strokeRect(Math.floor(x), Math.floor(y), Math.floor(width), Math.floor(height));            
   })  
-  const newBitmap = await createImageBitmap(canvas)
-  const newFrame = new VideoFrame(newBitmap, {timestamp}); 
-  return newFrame;
+  const newBitmap = await createImageBitmap(canvas)  
+  return new VideoFrame(newBitmap, {timestamp});   
 };
 
 button.addEventListener("click", async () => {
   try {
   const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-  const videoTrack = stream.getVideoTracks()[0];
+  const videoTrack = stream.getVideoTracks()[0];  
   video.srcObject = stream;
+    console.log(stream)
   video.addEventListener('loadedmetadata', () => {  
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
@@ -51,11 +38,11 @@ button.addEventListener("click", async () => {
         bitmap.close();
         controller.enqueue(videoFrame);
         return;
-      }
+      }      
       const timestamp = videoFrame.timestamp;
-      const newFrame = await highlightBarcode(bitmap, timestamp, detectedBarcodes);      
-      console.log(newFrame)
       videoFrame.close();
+      const newFrame = await highlightBarcode(bitmap, timestamp, detectedBarcodes);      
+      console.log(newFrame)      
       controller.enqueue(newFrame);     
     }
   });
@@ -70,6 +57,7 @@ button.addEventListener("click", async () => {
 
   // Forward Web-exposed signals to the original videoTrack.
   trackGenerator.readableControl.pipeTo(trackProcessor.writableControl);
+  console.log(trackProcessor.readable)
   } catch (err) {
     console.error(err.name, err.message)
   }
