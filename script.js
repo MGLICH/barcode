@@ -34,6 +34,9 @@ const highlightBarcode = async (bitmap, timestamp, detectedBarcodes) => {
 };
 
 button.addEventListener("click", async () => {
+  if (typeof currentStream !== 'undefined') {
+    stopMediaTracks(currentStream);
+  }
   try {
     const devices = await navigator.mediaDevices.enumerateDevices();
     listDevices(devices);
@@ -93,7 +96,7 @@ button.addEventListener("click", async () => {
   }
 });
 
-const stopMediaTracks(stream) {
+const stopMediaTracks = (stream) => {
   stream.getTracks().forEach(track => {
     track.stop();
   });
