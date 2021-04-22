@@ -8,6 +8,8 @@ const select = document.querySelector("select");
 const canvas = new OffscreenCanvas(1, 1);
 const ctx = canvas.getContext("2d");
 
+let currentStream;
+
 const barcodeDetector = new BarcodeDetector({
   formats: ["qr_code"]
 });
@@ -40,14 +42,12 @@ button.addEventListener("click", async () => {
       videoConstraints.facingMode = 'environment';
     } else {
       videoConstraints.deviceId = { exact: select.value };
-    }
+    }    
     const stream = await navigator.mediaDevices.getUserMedia({      
       video: videoConstraints,
       audio: false,
     });
-    const videoTrack = stream.getVideoTracks()[0];
-    await videoTrack.applyConstraints({ facingMode: { exact: "environment" } });
-
+    const videoTrack = stream.getVideoTracks()[0];   
     video.addEventListener("loadedmetadata", () => {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
@@ -86,11 +86,18 @@ button.addEventListener("click", async () => {
     trackGenerator.readableControl.pipeTo(trackProcessor.writableControl);
     const processedStream = new MediaStream();
     processedStream.addTrack(trackGenerator);
+    currentStream = processedStream;
     video.srcObject = processedStream;
   } catch (err) {
     console.error(err.name, err.message);
   }
 });
+
+const stopMediaTracks(stream) {
+  stream.getTracks().forEach(track => {
+    track.stop();
+  });
+}
 
 const listDevices = mediaDevices => {
   select.innerHTML = "";
@@ -108,3 +115,5 @@ const listDevices = mediaDevices => {
     }
   });
 };
+
+navigator.mediaDevices.enumerateDevices().then(listDevices);
