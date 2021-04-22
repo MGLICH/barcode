@@ -4,7 +4,7 @@ if (!isSecureContext) {
 
 const video = document.querySelector("video");
 const button = document.querySelector("button");
-const select = document.getElementById("select");
+const select = document.querySelector("select");
 const canvas = new OffscreenCanvas(1, 1);
 const ctx = canvas.getContext("2d");
 
@@ -92,6 +92,9 @@ const gotDevices = mediaDevices => {
   mediaDevices.forEach(mediaDevice => {
     if (mediaDevice.kind === "videoinput") {
       const option = document.createElement("option");
+      if (count === 1) {
+        option.selected = true;
+      }
       option.value = mediaDevice.deviceId;
       const label = mediaDevice.label || `Camera ${count++}`;
       const textNode = document.createTextNode(label);
