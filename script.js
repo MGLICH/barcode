@@ -34,9 +34,16 @@ const highlightBarcode = async (bitmap, timestamp, detectedBarcodes) => {
 button.addEventListener("click", async () => {
   try {
     const devices = await navigator.mediaDevices.enumerateDevices();
-    gotDevices(devices);
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "environment", width: 640, height: 480 }
+    listDevices(devices);
+    const videoConstraints = {};
+    if (select.value === '') {
+      videoConstraints.facingMode = 'environment';
+    } else {
+      videoConstraints.deviceId = { exact: select.value };
+    }
+    const stream = await navigator.mediaDevices.getUserMedia({      
+      video: videoConstraints,
+      audio: false,
     });
     const videoTrack = stream.getVideoTracks()[0];
     await videoTrack.applyConstraints({ facingMode: { exact: "environment" } });
@@ -85,9 +92,9 @@ button.addEventListener("click", async () => {
   }
 });
 
-const gotDevices = mediaDevices => {
+const listDevices = mediaDevices => {
   select.innerHTML = "";
-  select.appendChild(document.createElement("option"));
+  select.append(document.createElement("option"));
   let count = 1;
   mediaDevices.forEach(mediaDevice => {
     if (mediaDevice.kind === "videoinput") {
@@ -95,11 +102,9 @@ const gotDevices = mediaDevices => {
       if (count === 1) {
         option.selected = true;
       }
-      option.value = mediaDevice.deviceId;
-      const label = mediaDevice.label || `Camera ${count++}`;
-      const textNode = document.createTextNode(label);
-      option.appendChild(textNode);
-      select.appendChild(option);
+      option.value = mediaDevice.deviceId;      
+      option.textContent = mediaDevice.label || `Camera ${count++}`;
+      select.append(option);
     }
   });
 };
