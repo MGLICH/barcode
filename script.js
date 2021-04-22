@@ -1,10 +1,10 @@
 if (!isSecureContext) {
-  location.protocol = 'https:';  
+  location.protocol = "https:";
 }
 
 const video = document.querySelector("video");
 const button = document.querySelector("button");
-const select = document.getElementById('select');
+const select = document.getElementById("select");
 const canvas = new OffscreenCanvas(1, 1);
 const ctx = canvas.getContext("2d");
 
@@ -18,15 +18,14 @@ const highlightBarcode = async (bitmap, timestamp, detectedBarcodes) => {
   bitmap.close();
   detectedBarcodes.map(detectedBarcode => {
     const { x, y, width, height } = detectedBarcode.boundingBox;
-    ctx.strokeRect(
-      floor(x),
-      floor(y),
-      floor(width),
-      floor(height)
+    ctx.strokeRect(floor(x), floor(y), floor(width), floor(height));
+    const text = detectedBarcode.rawValue;
+    const dimensions = ctx.measureText(text);
+    ctx.fillText(
+      text,
+      floor(x + width / 2 - dimensions.width / 2),
+      floor(y) + height + 20
     );
-    const text = detectedBarcode.rawValue;    
-    const dimensions = ctx.measureText(text);    
-    ctx.fillText(text, floor(x + width / 2 - dimensions.width / 2), floor(y) + height + 20);
   });
   const newBitmap = await createImageBitmap(canvas);
   return new VideoFrame(newBitmap, { timestamp });
@@ -34,15 +33,19 @@ const highlightBarcode = async (bitmap, timestamp, detectedBarcodes) => {
 
 button.addEventListener("click", async () => {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    gotDevices(devices);
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment", width: 640, height: 480 }
+    });
     const videoTrack = stream.getVideoTracks()[0];
-    await videoTrack.applyConstraints({facingMode: { exact: "environment" }});
+    await videoTrack.applyConstraints({ facingMode: { exact: "environment" } });
 
     video.addEventListener("loadedmetadata", () => {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      ctx.strokeStyle = 'red';
-      ctx.fillStyle = 'red';
+      ctx.strokeStyle = "red";
+      ctx.fillStyle = "red";
       video.play();
     });
 
@@ -82,13 +85,13 @@ button.addEventListener("click", async () => {
   }
 });
 
-const gotDevices = (mediaDevices) => {
-  select.innerHTML = '';
-  select.appendChild(document.createElement('option'));
+const gotDevices = mediaDevices => {
+  select.innerHTML = "";
+  select.appendChild(document.createElement("option"));
   let count = 1;
   mediaDevices.forEach(mediaDevice => {
-    if (mediaDevice.kind === 'videoinput') {
-      const option = document.createElement('option');
+    if (mediaDevice.kind === "videoinput") {
+      const option = document.createElement("option");
       option.value = mediaDevice.deviceId;
       const label = mediaDevice.label || `Camera ${count++}`;
       const textNode = document.createTextNode(label);
