@@ -11,6 +11,7 @@ ctx.strokeStyle = "red";
 ctx.fillStyle = "red";
 
 let currentStream;
+let currentProcessedStream;
 
 const barcodeDetector = new BarcodeDetector({
   formats: ["qr_code"]
@@ -36,25 +37,27 @@ const highlightBarcode = async (bitmap, timestamp, detectedBarcodes) => {
 };
 
 button.addEventListener("click", async () => {
-  if (typeof currentStream !== 'undefined') {
+  if (typeof currentStream !== "undefined") {
     stopMediaTracks(currentStream);
+    stopMediaTracks(currentProcessedStream);
   }
   try {
-    const devices = await navigator.mediaDevices.enumerateDevices();    
+    const devices = await navigator.mediaDevices.enumerateDevices();
     const videoConstraints = {};
-    if (select.value === '') {
-      videoConstraints.facingMode = 'environment';
+    if (select.value === "") {
+      videoConstraints.facingMode = "environment";
     } else {
       videoConstraints.deviceId = { exact: select.value };
-    }    
-    const stream = await navigator.mediaDevices.getUserMedia({      
+    }
+    const stream = await navigator.mediaDevices.getUserMedia({
       video: videoConstraints,
-      audio: false,
+      audio: false
     });
-    const videoTrack = stream.getVideoTracks()[0];   
+    currentStream = stream;
+    const videoTrack = stream.getVideoTracks()[0];
     video.addEventListener("loadedmetadata", () => {
       canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;      
+      canvas.height = video.videoHeight;
       video.play();
     });
 
@@ -75,6 +78,10 @@ button.addEventListener("click", async () => {
           detectedBarcodes
         );
         controller.enqueue(newFrame);
+      },
+
+      flush(controller) {
+        controller.terminate();
       }
     });
 
@@ -85,39 +92,36 @@ button.addEventListener("click", async () => {
       .pipeThrough(transformer)
       .pipeTo(trackGenerator.writable);
 
-    trackGenerator.readableControl
-      .pipeTo(trackProcessor.writableControl);
-    
+    trackGenerator.readableControl.pipeTo(trackProcessor.writableControl);
+
     const processedStream = new MediaStream();
     processedStream.addTrack(trackGenerator);
-    currentStream = processedStream;
+    currentProcessedStream = processedStream;
     video.srcObject = processedStream;
   } catch (err) {
     console.error(err.name, err.message);
   }
 });
 
-const stopMediaTracks = (stream) => {
+const stopMediaTracks = stream => {
   stream.getTracks().forEach(track => {
     track.stop();
   });
-}
+};
 
-const listDevices = mediaDevices => {
-  select.innerHTML = "";
-  select.append(document.createElement("option"));
-  let count = 1;
-  mediaDevices.forEach(mediaDevice => {
+const listDevices = mediaDevices => {    
+  mediaDevices.forEach((mediaDevice, i) => {
     if (mediaDevice.kind === "videoinput") {
-      const option = document.createElement("option");      
-      option.value = mediaDevice.deviceId;      
-      option.textContent = mediaDevice.label || `Camera ${count++}`;
+      const option = document.createElement("option");
+      option.selected = i === 0 ? true : false;
+      option.value = mediaDevice.deviceId;
+      option.textContent = mediaDevice.label || `Camera ${i}`;
       select.append(option);
     }
   });
 };
 
-select.addEventListener('change', () => {
+select.addEventListener("change", () => {
   button.click();
 });
 
