@@ -40,10 +40,7 @@ button.addEventListener("click", async () => {
     stopMediaTracks(currentStream);
   }
   try {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    if (!select.childNodes) {
-      listDevices(devices);
-    }
+    const devices = await navigator.mediaDevices.enumerateDevices();    
     const videoConstraints = {};
     if (select.value === '') {
       videoConstraints.facingMode = 'environment';
@@ -88,7 +85,9 @@ button.addEventListener("click", async () => {
       .pipeThrough(transformer)
       .pipeTo(trackGenerator.writable);
 
-    trackGenerator.readableControl.pipeTo(trackProcessor.writableControl);
+    trackGenerator.readableControl
+      .pipeTo(trackProcessor.writableControl);
+    
     const processedStream = new MediaStream();
     processedStream.addTrack(trackGenerator);
     currentStream = processedStream;
