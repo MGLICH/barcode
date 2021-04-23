@@ -6,14 +6,13 @@ body {
 }
 
 body {
-  font-family: system-ui, sans-serif;
-  outline: solid 1px red;
-  outline-offset: -1px;
-  margin: 0;
+  font-family: system-ui, sans-serif;  
+  margin-top: 0;
   padding: 0;
 }
 
 h1, h2 {
+  margin: 0;
   font-style: italic;
   color: #373fff;  
 }
@@ -27,13 +26,12 @@ video {
   width: 100%;
   height: auto;
   max-width: 100%;
-  object-fit: contain;
+  object-fit: cover;
 }
 
 div {
+  width: 100%;
+  height: 100%;
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;  
+  z-index: -1;
 }
