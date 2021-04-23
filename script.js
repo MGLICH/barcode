@@ -7,6 +7,8 @@ const button = document.querySelector("button");
 const select = document.querySelector("select");
 const canvas = new OffscreenCanvas(1, 1);
 const ctx = canvas.getContext("2d");
+ctx.strokeStyle = "red";
+ctx.fillStyle = "red";
 
 let currentStream;
 
@@ -39,7 +41,9 @@ button.addEventListener("click", async () => {
   }
   try {
     const devices = await navigator.mediaDevices.enumerateDevices();
-    listDevices(devices);
+    if (!select.childNodes) {
+      listDevices(devices);
+    }
     const videoConstraints = {};
     if (select.value === '') {
       videoConstraints.facingMode = 'environment';
@@ -53,9 +57,7 @@ button.addEventListener("click", async () => {
     const videoTrack = stream.getVideoTracks()[0];   
     video.addEventListener("loadedmetadata", () => {
       canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      ctx.strokeStyle = "red";
-      ctx.fillStyle = "red";
+      canvas.height = video.videoHeight;      
       video.play();
     });
 
@@ -108,15 +110,16 @@ const listDevices = mediaDevices => {
   let count = 1;
   mediaDevices.forEach(mediaDevice => {
     if (mediaDevice.kind === "videoinput") {
-      const option = document.createElement("option");
-      if (count === 1) {
-        option.selected = true;
-      }
+      const option = document.createElement("option");      
       option.value = mediaDevice.deviceId;      
       option.textContent = mediaDevice.label || `Camera ${count++}`;
       select.append(option);
     }
   });
 };
+
+select.addEventListener('change', () => {
+  button.click();
+});
 
 navigator.mediaDevices.enumerateDevices().then(listDevices);
