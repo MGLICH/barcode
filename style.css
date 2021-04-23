@@ -1,4 +1,6 @@
-/* CSS files add styling rules to your content */
+:root {
+  color-scheme: dark light;  
+}
 
 html,
 body {
@@ -14,13 +16,13 @@ body {
 
 h1, h2 {
   margin-top: 0;
-  font-style: italic;
+  padding-top: .25rem;
   color: #373fff;  
 }
 
 select, 
 button {
-  
+  font-size: inherit;
 }
 
 video {
