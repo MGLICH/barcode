@@ -47,8 +47,8 @@
       typeof currentStream !== "undefined" ||
       typeof currentProcessedStream !== "undefined"
     ) {
-      stopMediaTracks(currentStream);
       stopMediaTracks(currentProcessedStream);
+      stopMediaTracks(currentStream);      
     }
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
