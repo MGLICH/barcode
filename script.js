@@ -4,17 +4,20 @@
   }
 
   if (
-    (!"MediaStreamTrackProcessor" in window) ||
-    (!"MediaStreamTrackGenerator" in window)
+    !"MediaStreamTrackProcessor" in window ||
+    !"MediaStreamTrackGenerator" in window
   ) {
-    return alert("This demo is not supported on your browser.");
+    return alert("This demo is not supported on your browser. Your browser lacks support for `MediaStreamTrackProcessor` and `MediaStreamTrackGenerator`.");
+  }
+  if (!"BarcodeDetector" in window) {
+    return alert("This demo is not supported on your browser. Your browser lacks support for ``.")
   }
 
   const video = document.querySelector("video");
   const button = document.querySelector("button");
   const select = document.querySelector("select");
   const canvas = new OffscreenCanvas(1, 1);
-  const ctx = canvas.getContext("2d");  
+  const ctx = canvas.getContext("2d");
 
   let currentStream;
   let currentProcessedStream;
@@ -48,7 +51,7 @@
       typeof currentProcessedStream !== "undefined"
     ) {
       stopMediaTracks(currentProcessedStream);
-      stopMediaTracks(currentStream);      
+      stopMediaTracks(currentStream);
     }
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
@@ -64,13 +67,11 @@
       });
       currentStream = stream;
       const videoTrack = stream.getVideoTracks()[0];
-      video.addEventListener("loadedmetadata", () => {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        ctx.strokeStyle = "red";
-        ctx.fillStyle = "red";
-        video.play();
-      });
+      const { width, height } = videoTrack.getSettings();
+      canvas.width = width;
+      canvas.height = height;
+      ctx.strokeStyle = "red";
+      ctx.fillStyle = "red";
 
       const transformer = new TransformStream({
         async transform(videoFrame, controller) {
@@ -96,8 +97,10 @@
         }
       });
 
-      const trackProcessor = new MediaStreamTrackProcessor(videoTrack);
-      const trackGenerator = new MediaStreamTrackGenerator("video");
+      const trackProcessor = new MediaStreamTrackProcessor({
+        track: videoTrack
+      });
+      const trackGenerator = new MediaStreamTrackGenerator({ kind: "video" });
 
       trackProcessor.readable
         .pipeThrough(transformer)
@@ -108,6 +111,9 @@
       const processedStream = new MediaStream();
       processedStream.addTrack(trackGenerator);
       currentProcessedStream = processedStream;
+      video.addEventListener("loadedmetadata", () => {
+        video.play();
+      });
       video.srcObject = processedStream;
     } catch (err) {
       console.error(err.name, err.message);
