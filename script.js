@@ -10,7 +10,7 @@
     return alert("This demo is not supported on your browser. Your browser lacks support for `MediaStreamTrackProcessor` and `MediaStreamTrackGenerator`.");
   }
   if (!"BarcodeDetector" in window) {
-    return alert("This demo is not supported on your browser. Your browser lacks support for ``.")
+    return alert("This demo is not supported on your browser. Your browser lacks support for `BarcodeDetector`.");
   }
 
   const video = document.querySelector("video");
