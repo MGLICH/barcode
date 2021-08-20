@@ -4,12 +4,12 @@
   }
 
   if (
-    !"MediaStreamTrackProcessor" in window ||
-    !"MediaStreamTrackGenerator" in window
+    !("MediaStreamTrackProcessor" in window) ||
+    !("MediaStreamTrackGenerator" in window)
   ) {
     return alert("This demo is not supported on your browser. Your browser lacks support for `MediaStreamTrackProcessor` and `MediaStreamTrackGenerator`.");
   }
-  if (!"BarcodeDetector" in window) {
+  if (!("BarcodeDetector" in window)) {
     return alert("This demo is not supported on your browser. Your browser lacks support for `BarcodeDetector`.");
   }
 
