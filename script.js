@@ -106,8 +106,6 @@
         .pipeThrough(transformer)
         .pipeTo(trackGenerator.writable);
 
-      trackGenerator.readable.pipeTo(trackProcessor.writableControl);
-
       const processedStream = new MediaStream();
       processedStream.addTrack(trackGenerator);
       currentProcessedStream = processedStream;
